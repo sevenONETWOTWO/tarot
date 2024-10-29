@@ -1,0 +1,454 @@
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>塔罗牌抽取</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        .card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px auto;
+            width: 300px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .card img {
+            width: 100%;
+            border-radius: 8px;
+        }
+        .card-title {
+            font-weight: bold;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        .card-description {
+            font-size: 16px;
+            color: #555;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #5cb85c;
+            color: white;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>塔罗牌抽取</h1>
+	<h2>深呼吸并在心中默念问题</h2>
+    
+    <div class="card" id="tarotCard">
+        <img src="牌背.jpg" alt="塔罗牌" id="cardImage">
+        <div class="card-title" id="cardTitle">请抽取一张牌</div>
+        <div class="card-description" id="cardDescription"></div>
+        <div class="card-description" id="cardPosition"></div>
+    </div>
+    
+    <button onclick="drawCard()">抽取塔罗牌</button>
+
+    <script>
+        // 塔罗牌数据
+const tarotCards = [
+    {
+        title: "愚人(TheFool)",
+        description: "象征新的开始和冒险的精神。提醒你勇敢地面对未知，信任未来的可能性。",
+        reversed: "可能表示不负责任和冲动的行为。",
+        image: "愚人.jpg"
+    },
+    {
+        title: "魔术师(TheMagician)",
+        description: "掌握资源与潜能，积极行动，创造新机会。",
+        reversed: "缺乏动力和方向，可能会浪费才能。",
+        image: "魔术师.jpg"
+    },
+    {
+        title: "女祭司(TheHighPriestess)",
+        description: "内心的智慧和直觉，探索未知和潜意识。",
+        reversed: "忽视内心的声音，可能导致误解和迷失。",
+        image: "女祭司.jpg"
+    },
+    {
+        title: "皇后(TheEmpress)",
+        description: "丰饶、关怀和创造力，享受生活的美好。",
+        reversed: "缺乏自我关爱，可能面临不满和创意枯竭。",
+        image: "皇后.jpg"
+    },
+    {
+        title: "皇帝(TheEmperor)",
+        description: "权威、稳定和控制，带来秩序和保护。",
+        reversed: "专制和控制欲，可能导致混乱。",
+        image: "皇帝.jpg"
+    },
+    {
+        title: "教皇(TheHierophant)",
+        description: "传统、教育和精神指导，遵循社会规范。",
+        reversed: "反叛、迷失方向，可能偏离传统。",
+        image: "教皇.jpg"
+    },
+    {
+        title: "恋人(TheLovers)",
+        description: "爱情、和谐和选择，强调关系的重要性。",
+        reversed: "冲突和不和谐，可能需要重新评估关系。",
+        image: "恋人.jpg"
+    },
+    {
+        title: "战车(TheChariot)",
+        description: "胜利、意志和控制，努力克服障碍。",
+        reversed: "缺乏控制，可能面临挫折和困难。",
+        image: "战车.jpg"
+    },
+    {
+        title: "力量(Strength)",
+        description: "勇气、耐心和内心的力量，掌控自己的情感。",
+        reversed: "软弱和自我怀疑，可能难以应对挑战。",
+        image: "力量.jpg"
+    },
+    {
+        title: "隐士(TheHermit)",
+        description: "内省、孤独和智慧，寻找真理和自我。",
+        reversed: "孤立和孤独，可能需要重新连接他人。",
+        image: "隐士.jpg"
+    },
+    {
+        title: "命运之轮(WheelofFortune)",
+        description: "命运的转变，运气的好坏，生命的循环。",
+        reversed: "变化的抵抗，可能面临挫折和不安。",
+        image: "命运之轮.jpg"
+    },
+    {
+        title: "正义(Justice)",
+        description: "公正、平衡和责任，强调诚实和公平。",
+        reversed: "不公和偏见，可能需承担责任。",
+        image: "正义.jpg"
+    },
+    {
+        title: "倒吊人(TheHangedMan)",
+        description: "牺牲、等待和新视角，重新审视事物。",
+        reversed: "逃避责任，可能缺乏行动。",
+        image: "吊人.jpg"
+    },
+    {
+        title: "死神(Death)",
+        description: "结束和新开始，生命的转变与重生。",
+        reversed: "拒绝改变，可能停滞不前。",
+        image: "死神.jpg"
+    },
+    {
+        title: "节制(Temperance)",
+        description: "平衡、适度和和谐，寻求内心的稳定。",
+        reversed: "极端和不平衡，可能导致冲突。",
+        image: "节制.jpg"
+    },
+    {
+        title: "魔鬼(TheDevil)",
+        description: "束缚、诱惑和物质主义，面对内心的恐惧。",
+        reversed: "摆脱束缚，可能获得自由。",
+        image: "魔鬼.jpg"
+    },
+    {
+        title: "塔(TheTower)",
+        description: "突如其来的变故和崩溃，面对剧烈的变化。",
+        reversed: "避免灾难，可能经历小规模的变化。",
+        image: "塔.jpg"
+    },
+    {
+        title: "星星(TheStar)",
+        description: "希望、灵感和治愈，指引未来的方向。",
+        reversed: "失去信心，可能面临失望。",
+        image: "星星.jpg"
+    },
+    {
+        title: "月亮(TheMoon)",
+        description: "幻觉、潜意识和直觉，探索未知的恐惧。",
+        reversed: "误导和混乱，可能需要清晰思考。",
+        image: "月亮.jpg"
+    },
+    {
+        title: "太阳(TheSun)",
+        description: "快乐、成功和活力，积极向上的能量。",
+        reversed: "不满和消极，可能缺乏自信。",
+        image: "太阳.jpg"
+    },
+    {
+        title: "审判(Judgment)",
+        description: "复苏、觉醒和反思，重新审视过去。",
+        reversed: "逃避责任，可能不愿意面对真相。",
+        image: "审判.jpg"
+    },
+    {
+        title: "世界(TheWorld)",
+        description: "完成、成就和整合，达成目标。",
+        reversed: "未完成的事情，可能感到不满。",
+        image: "世界.jpg"
+    },
+    // 小阿尔克那部分，分为四个花色
+    {
+        title: "权杖一",
+        description: "新的开始，创造力和热情的火花。",
+        reversed: "缺乏方向，可能未能开始新的项目。",
+        image: "权杖一.jpg"
+    },
+    {
+        title: "权杖二",
+        description: "规划和决策，展望未来的潜力。",
+        reversed: "犹豫不决，可能面临选择的困难。",
+        image: "权杖二.jpg"
+    },
+    {
+        title: "权杖三",
+        description: "远见和扩展，等待成果的到来。",
+        reversed: "短视和失去信心，可能错过机会。",
+        image: "权杖三.jpg"
+    },
+    {
+        title: "权杖四",
+        description: "庆祝、和谐和稳定，家庭的幸福。",
+        reversed: "不和谐，可能面临家庭问题。",
+        image: "权杖四.jpg"
+    },
+    {
+        title: "权杖五",
+        description: "竞争和冲突，面对挑战的勇气。",
+        reversed: "避免冲突，可能失去信心。",
+        image: "权杖五.jpg"
+    },
+    {
+        title: "权杖六",
+        description: "胜利和成就，享受成功的喜悦。",
+        reversed: "失败和失落，可能感到失望。",
+        image: "权杖六.jpg"
+    },
+    {
+        title: "权杖七",
+        description: "坚持和勇气，捍卫自己的立场。",
+        reversed: "放弃和妥协，可能缺乏自信。",
+        image: "权杖七.jpg"
+    },
+    {
+        title: "权杖八",
+        description: "迅速的行动和变化，快速进展。",
+        reversed: "延迟和停滞，可能缺乏动力。",
+        image: "权杖八.jpg"
+    },
+    {
+        title: "权杖九",
+        description: "防御和保护，经历挑战后的坚持。",
+        reversed: "不安和疲惫，可能感到不堪重负。",
+        image: "权杖九.jpg"
+    },
+    {
+        title: "权杖十",
+        description: "责任和压力，承担过多的负担。",
+        reversed: "解放和放下，可能需要释放负担。",
+        image: "权杖十.jpg"
+    },
+    {
+        title: "圣杯一",
+        description: "情感的新开始，爱情和灵感。",
+        reversed: "情感阻塞，可能缺乏沟通。",
+        image: "圣杯一.jpg"
+    },
+    {
+        title: "圣杯二",
+        description: "和谐的关系和伙伴，情感的连接。",
+        reversed: "不和谐，可能面临关系的挑战。",
+        image: "圣杯2二jpg"
+    },
+    {
+        title: "圣杯三",
+        description: "庆祝、友情和团体的支持，分享快乐。",
+        reversed: "隔阂和冲突，可能失去和谐。",
+        image: "圣杯三.jpg"
+    },
+    {
+        title: "圣杯四",
+        description: "反思和重新评估，感到不满。",
+        reversed: "新的机会和觉醒，可能需要行动。",
+        image: "圣杯四.jpg"
+    },
+    {
+        title: "圣杯五",
+        description: "失去和悲伤，关注消极情感。",
+        reversed: "接受和愈合，可能重新发现希望。",
+        image: "圣杯五.jpg"
+    },
+    {
+        title: "圣杯六",
+        description: "怀旧和回忆，关注过去的快乐时光。",
+        reversed: "停滞不前，可能无法向前看。",
+        image: "圣杯六.jpg"
+    },
+    {
+        title: "圣杯七",
+        description: "选择和幻想，面对过多的选择。",
+        reversed: "决策困难，可能感到迷失。",
+        image: "圣杯七.jpg"
+    },
+    {
+        title: "圣杯八",
+        description: "放弃和追求内心的渴望，寻求更高的目标。",
+        reversed: "停滞不前，可能无法放下过去。",
+        image: "圣杯八.jpg"
+    },
+    {
+        title: "圣杯九",
+        description: "愿望的实现，情感上的满足。",
+        reversed: "不满足，可能感到空虚。",
+        image: "圣杯九.jpg"
+    },
+    {
+        title: "圣杯十",
+        description: "家庭的幸福和情感的满足，传承的喜悦。",
+        reversed: "家庭问题，可能缺乏支持。",
+        image: "圣杯十.jpg"
+    },
+    {
+        title: "宝剑一",
+        description: "新的思维和真理，清晰的思考。",
+        reversed: "混乱和误解，可能面临障碍。",
+        image: "宝剑一.jpg"
+    },
+    {
+        title: "宝剑二",
+        description: "犹豫和选择的困境，面临决策的难题。",
+        reversed: "克服困难，可能找到解决方案。",
+        image: "宝剑二.jpg"
+    },
+    {
+        title: "宝剑三",
+        description: "心碎和悲伤，面对失去的痛苦。",
+        reversed: "愈合和重生，可能开始新的旅程。",
+        image: "宝剑三.jpg"
+    },
+    {
+        title: "宝剑四",
+        description: "休息和恢复，重新评估自己的状态。",
+        reversed: "不安和焦虑，可能难以找到平静。",
+        image: "宝剑四.jpg"
+    },
+    {
+        title: "宝剑五",
+        description: "冲突和竞争，可能面临挑战和对抗。",
+        reversed: "和解和妥协，可能避免冲突。",
+        image: "宝剑五.jpg"
+    },
+    {
+        title: "宝剑六",
+        description: "转变和迁移，找到解决问题的方法。",
+        reversed: "困难的转变，可能无法逃避。",
+        image: "宝剑六.jpg"
+    },
+    {
+        title: "宝剑七",
+        description: "策略和狡诈，面临不诚实的情况。",
+        reversed: "揭露和真相，可能面临正义。",
+        image: "宝剑七.jpg"
+    },
+    {
+        title: "宝剑八",
+        description: "束缚和限制，面临无能为力的感觉。",
+        reversed: "解放和觉醒，可能获得自由。",
+        image: "宝剑八.jpg"
+    },
+    {
+        title: "宝剑九",
+        description: "焦虑和失眠，面临内心的恐惧。",
+        reversed: "释怀和愈合，可能克服内心的冲突。",
+        image: "宝剑九.jpg"
+    },
+    {
+        title: "宝剑十",
+        description: "悲剧和结束，面临痛苦的结局。",
+        reversed: "重生和希望，可能从痛苦中走出。",
+        image: "宝剑十.jpg"
+    },
+    {
+        title: "金币一",
+        description: "物质的新开始，财富和机会的象征。",
+        reversed: "缺乏财务管理，可能面临损失。",
+        image: "金币一.jpg"
+    },
+    {
+        title: "金币二",
+        description: "平衡和多重任务，面临压力。",
+        reversed: "不稳定和混乱，可能难以管理。",
+        image: "金币二.jpg"
+    },
+    {
+        title: "金币三",
+        description: "努力和成就，展示才能的时刻。",
+        reversed: "未被认可，可能面临沮丧。",
+        image: "金币三.jpg"
+    },
+    {
+        title: "金币四",
+        description: "保留和控制，可能面临贪婪的倾向。",
+        reversed: "放手和分享，可能需要释放控制。",
+        image: "金币四.jpg"
+    },
+    {
+        title: "金币五",
+        description: "财务困难和缺乏支持，可能面临挑战。",
+        reversed: "重建和恢复，可能逐渐好转。",
+        image: "金币五.jpg"
+    },
+    {
+        title: "金币六",
+        description: "慷慨和分享，建立平等的关系。",
+        reversed: "不公和剥削，可能面临不平等。",
+        image: "金币六.jpg"
+    },
+    {
+        title: "金币七",
+        description: "评估和反思，寻找未来的方向。",
+        reversed: "缺乏方向，可能感到困惑。",
+        image: "金币七.jpg"
+    },
+    {
+        title: "金币八",
+        description: "努力和专注，追求事业的成功。",
+        reversed: "不愿意付出，可能面临停滞。",
+        image: "金币八.jpg"
+    },
+    {
+        title: "金币九",
+        description: "财富和独立，享受成果的成就感。",
+        reversed: "不满足和贪婪，可能缺乏感激。",
+        image: "金币九.jpg"
+    },
+    {
+        title: "金币十",
+        description: "遗产和传承，建立持久的财富。",
+        reversed: "家庭纷争，可能面临财务问题。",
+        image: "金币十.jpg"
+    }
+];
+
+
+        // 抽取塔罗牌的函数
+        function drawCard() {
+            const randomIndex = Math.floor(Math.random() * tarotCards.length);
+            const selectedCard = tarotCards[randomIndex];
+
+            // 随机决定牌的正反位
+            const isReversed = Math.random() < 0.5;
+
+            document.getElementById("cardImage").src = selectedCard.image;
+            document.getElementById("cardTitle").innerText = selectedCard.title;
+            document.getElementById("cardDescription").innerText = isReversed ? selectedCard.reversed : selectedCard.description;
+            document.getElementById("cardPosition").innerHTML = isReversed ? "<b>逆位</b>" : "<b>正位</b>";
+        }
+    </script>
+</body>
+</html>
